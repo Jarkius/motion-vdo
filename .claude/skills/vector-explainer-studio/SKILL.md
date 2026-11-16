@@ -18,7 +18,8 @@ implementation: copy its structure.
    in `src/videos/<id>/data.ts` and quote it from there; never type a figure into JSX or
    the script that isn't derived in `data.ts`. Show the table to the user and wait for approval.
 3. **Voiceover.** One audio file per line: `public/videos/<id>/vo/01.wav`, `02.wav`, ...
-   The user's TTS (Kokoro, F5-TTS, ElevenLabs) produces these. For a draft, run
+   Generate with `scripts/tts_kokoro.py` (English, neural, free; see its header for model
+   files), the user's F5-TTS (Thai), or ElevenLabs. For an instant robotic timing draft, run
    `scripts/tts_placeholder.sh videos/<id>/script.txt public/videos/<id>/vo`.
    Timing is per sentence from file length. Don't rely on Whisper word timestamps
    (unreliable for Thai, which has no spaces between words).
