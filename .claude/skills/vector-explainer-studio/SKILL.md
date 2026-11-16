@@ -19,7 +19,10 @@ implementation: copy its structure.
    the script that isn't derived in `data.ts`. Show the table to the user and wait for approval.
 3. **Voiceover.** One audio file per line: `public/videos/<id>/vo/01.wav`, `02.wav`, ...
    Generate with `scripts/tts_kokoro.py` (English, neural, free; see its header for model
-   files), the user's F5-TTS (Thai), or ElevenLabs. For an instant robotic timing draft, run
+   files), `scripts/tts_f5.py` (Thai; clones the user's reference voice from `voices/`), or
+   ElevenLabs. For Thai, always pass `--verify`, and re-roll every flagged line with
+   `--lines N --seed <new>` until it passes or the user has listened and accepted it: F5
+   misreads tone marks (ดอกเบี้ย became ดอกเบียร์). For an instant robotic timing draft, run
    `scripts/tts_placeholder.sh videos/<id>/script.txt public/videos/<id>/vo`.
    Timing is per sentence from file length. Don't rely on Whisper word timestamps
    (unreliable for Thai, which has no spaces between words).

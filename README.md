@@ -22,7 +22,7 @@ In Claude Code, run `/vector-explainer-studio` and describe the video. The skill
 1. Script, one beat per line in `videos/<id>/script.txt`
 2. **Fact-check gate:** every claim gets a source; every number is computed in `src/videos/<id>/data.ts`
 3. Voiceover: one file per beat at `public/videos/<id>/vo/01.wav` ... from your TTS
-   (`scripts/tts_kokoro.py` for English, F5-TTS for Thai, or ElevenLabs), or
+   (`scripts/tts_kokoro.py` for English, `scripts/tts_f5.py --verify` for Thai, or ElevenLabs), or
    `scripts/tts_placeholder.sh` for an instant robotic draft
 4. **Style gate:** `npx remotion still CharacterSheet out/sheet.png --frame=40`
 5. Scenes, timed automatically from the voiceover file lengths
