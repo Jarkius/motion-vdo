@@ -2,6 +2,7 @@ import React from "react";
 import { Composition } from "remotion";
 import { CharacterSheet } from "./CharacterSheet";
 import { calculateCompoundMetadata, CompoundVideo, FPS } from "./videos/compound/CompoundVideo";
+import { calculateReflexMetadata, ReflexVideo } from "./videos/reflex/ReflexVideo";
 
 export const RemotionRoot: React.FC = () => {
   return (
@@ -15,6 +16,16 @@ export const RemotionRoot: React.FC = () => {
         height={1080}
         defaultProps={{ voFrames: [60, 60, 60, 60] }}
         calculateMetadata={calculateCompoundMetadata}
+      />
+      <Composition
+        id="Reflex"
+        component={ReflexVideo}
+        durationInFrames={240}
+        fps={FPS}
+        width={1920}
+        height={1080}
+        defaultProps={{ voFrames: [75, 60] }}
+        calculateMetadata={calculateReflexMetadata}
       />
       <Composition id="CharacterSheet" component={CharacterSheet} durationInFrames={90} fps={FPS} width={1920} height={1080} />
     </>

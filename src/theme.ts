@@ -26,6 +26,19 @@ export const colors = {
   emerald: "#4ADE80",
 } as const;
 
+// Cinematic mode: dark silhouettes rim-lit by a low warm sun.
+export const cine = {
+  core: "#0F172A",
+  rim: "#FDBA74",
+  eye: "#F8FAFC",
+  skyTop: "#0B1026",
+  skyMid: "#3B1D4A",
+  skyHorizon: "#F97316",
+  far: "#1E1B3A",
+  mid: "#0A0E1A",
+  badge: "#FDBA74",
+} as const;
+
 export const springs = {
   // Entrances: quick with a small overshoot.
   pop: { damping: 14, stiffness: 120 },

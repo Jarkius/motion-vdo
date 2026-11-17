@@ -50,6 +50,33 @@ All timing props are frames relative to the scene. Use `useVideoConfig().fps` fo
 Sound: `<Sfx at={frame} name="whoosh|pop|tick|ding" />` from `public/sfx/`
 (regenerate with `python3 scripts/synth_sfx.py`). Keep SFX at 0.25–0.35 volume under voice.
 
+## Cinematic mode (story and "what if" videos)
+
+Use for narrative videos; use the default flat mode for data-heavy explainers.
+`src/videos/reflex/` is the reference implementation.
+
+- **No subtitles.** Text is limited to `Badge`: uppercase labels for numbers, timers
+  (`0.25 s`), comparisons (`NORMAL` / `YOU`) and section headers. The action carries the story.
+- **Characters:** `Silhouette`: dark core, 3 px rim light on the side facing `light`
+  (degrees the light comes *from*; -15 = low front-right sun), `jacket`, `prop` (`cap`, `scarf`),
+  expressions `neutral happy_arcs wide_shock focused_glint determined`.
+  Give each recurring character a signature prop and colour. Same rig and poses as
+  `Character`, plus `catch` and `brace`.
+- **Stage:** `ParallaxStage` with `far` (`Skyline`: sun + buildings), `mid` (all action and
+  overlays), `fore` (`Foliage`). `pan` moves the camera; `closeUp` pushes in around a focus
+  point and blurs far/fore (5 px). Put overlays in `mid` so they zoom with the action.
+- **Light must be consistent:** the sun in `far` must sit on the same side as every
+  character's `light` direction.
+- **Overlays:** `TargetRings` on the focal object or point *before* the action; `Trajectory`
+  (dotted path, fades after `hold`) for thrown or moving objects; `Ghosts` trailing anything
+  fast (move it with `quad()` along the same curve); `SpeedBurst` on the impact frame only.
+- **Timing lives in one `timeline(voFrames)` function** that derives every beat (throws,
+  reactions, catches) from voiceover lengths. Encode the story's numbers as frame gaps
+  where possible (NORMAL flinches `NORMAL_S * FPS` frames late).
+- QA defects found while building this mode: a cap covering the eyes (props must stay
+  above the brow line), a finished trail cluttering later shots, and a rim light with no
+  visible source. Check all three on every cinematic render.
+
 ## Layout rules (each one came from a defect found in QA)
 
 - Canvas 1920×1080. Keep text inside x 100–1820, y 80–1000.

@@ -1,33 +1,10 @@
 import React from "react";
-import { interpolate, spring, useCurrentFrame, useVideoConfig } from "remotion";
-import { colors, springs } from "../theme";
+import { interpolate } from "remotion";
+import { colors } from "../theme";
+import { active, HIP_Y, Keyframe, LIMB, PoseName, useRig } from "./rig";
 
-export type PoseName = "idle" | "point" | "shrug" | "cheer" | "think";
+export type { PoseName } from "./rig";
 export type Mood = "neutral" | "happy" | "worried" | "surprised";
-
-/**
- * Arm angles in degrees: [shoulder, elbow]. 0 = hanging straight down,
- * positive = away from the body, 180 = straight up. Elbow is relative to the
- * upper arm. Legs: hip spread in degrees. hop: vertical lift in px.
- */
-type Pose = {
-  left: [number, number];
-  right: [number, number];
-  legs: number;
-  hop: number;
-  lean: number;
-};
-
-const POSES: Record<PoseName, Pose> = {
-  idle: { left: [12, 8], right: [12, 8], legs: 8, hop: 0, lean: 0 },
-  point: { left: [12, 8], right: [88, 4], legs: 10, hop: 0, lean: 4 },
-  shrug: { left: [38, 95], right: [38, 95], legs: 8, hop: 0, lean: 0 },
-  cheer: { left: [160, 18], right: [160, 18], legs: 14, hop: 18, lean: 0 },
-  // Solved so the hand lands under the chin with the elbow across the chest.
-  think: { left: [12, 8], right: [-62, -132], legs: 6, hop: 0, lean: -3 },
-};
-
-type Keyframe<T> = { at: number; value: T };
 
 export type CharacterProps = {
   /** Pose changes over time, `at` in frames relative to this component. */
@@ -44,37 +21,6 @@ export type CharacterProps = {
   flip?: boolean;
   /** Offsets the blink cycle so two characters don't blink in sync. */
   seed?: number;
-};
-
-const UPPER = 72;
-const FORE = 66;
-const LIMB = 15;
-
-const active = <T,>(keys: Keyframe<T>[], frame: number) => {
-  let current = 0;
-  for (let i = 0; i < keys.length; i++) if (keys[i].at <= frame) current = i;
-  return current;
-};
-
-const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
-
-const blendPose = (a: Pose, b: Pose, t: number): Pose => ({
-  left: [lerp(a.left[0], b.left[0], t), lerp(a.left[1], b.left[1], t)],
-  right: [lerp(a.right[0], b.right[0], t), lerp(a.right[1], b.right[1], t)],
-  legs: lerp(a.legs, b.legs, t),
-  hop: lerp(a.hop, b.hop, t),
-  lean: lerp(a.lean, b.lean, t),
-});
-
-const rad = (d: number) => (d * Math.PI) / 180;
-
-/** Returns elbow and hand points for an arm. side = -1 (screen left) or 1. */
-const arm = (sx: number, sy: number, [a, b]: [number, number], side: number) => {
-  const ex = sx + side * UPPER * Math.sin(rad(a));
-  const ey = sy + UPPER * Math.cos(rad(a));
-  const hx = ex + side * FORE * Math.sin(rad(a + b));
-  const hy = ey + FORE * Math.cos(rad(a + b));
-  return { ex, ey, hx, hy };
 };
 
 const Mouth: React.FC<{ mood: Mood; open: number }> = ({ mood, open }) => {
@@ -107,26 +53,13 @@ export const Character: React.FC<CharacterProps> = ({
   flip = false,
   seed = 0,
 }) => {
-  const frame = useCurrentFrame();
-  const { fps } = useVideoConfig();
-
-  // Pose: spring from the previous keyframe's pose into the current one.
-  const pi = active(poses, frame);
-  const target = POSES[poses[pi].value];
-  const from = pi > 0 ? POSES[poses[pi - 1].value] : target;
-  const t = spring({ frame: frame - poses[pi].at, fps, config: springs.smooth, durationInFrames: 12 });
-  const pose = blendPose(from, target, t);
-
+  const { frame, pose, enter, breath, open, eyeScale, shoulderY, L, R, footSpread } = useRig({
+    poses,
+    talking,
+    enterAt,
+    seed,
+  });
   const mood = moods[active(moods, frame)].value;
-
-  const enter = spring({ frame: frame - enterAt, fps, config: springs.pop });
-  const breath = Math.sin((frame / fps) * Math.PI * 0.5) * 3;
-
-  const isTalking = talking.some(([s, e]) => frame >= s && frame < e);
-  const open = isTalking ? Math.abs(Math.sin(frame * 0.85 + seed)) : 0;
-
-  const blinkPhase = (frame + seed * 37) % 96;
-  const eyeScale = blinkPhase < 4 ? 0.15 : 1;
 
   // Brow end heights (negative = up). Inner ends raised reads as worry.
   const [browInner, browOuter] = {
@@ -136,11 +69,7 @@ export const Character: React.FC<CharacterProps> = ({
     surprised: [-10, -9],
   }[mood];
 
-  const shoulderY = -270 + breath;
-  const L = arm(-46, shoulderY, pose.left, -1);
-  const R = arm(46, shoulderY, pose.right, 1);
-  const hipY = -150;
-  const footSpread = 22 + Math.sin(rad(pose.legs)) * 60;
+  const hipY = HIP_Y;
 
   return (
     <div

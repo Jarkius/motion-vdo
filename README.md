@@ -28,7 +28,8 @@ In Claude Code, run `/vector-explainer-studio` and describe the video. The skill
 5. Scenes, timed automatically from the voiceover file lengths
 6. Render, then visual QA with `/watch`
 
-`src/videos/compound/` is the reference example: a 19-second video on $100/month at 7%
+`src/videos/reflex/` is the cinematic-mode example (7 s, rim-lit silhouettes, parallax,
+close-up). `src/videos/compound/` is the flat-mode example: a 19-second video on $100/month at 7%
 for 30 years ($36,000 deposited, $121,997 final).
 
 ## Layout
@@ -36,7 +37,7 @@ for 30 years ($36,000 deposited, $121,997 final).
 | Path | What |
 |---|---|
 | `src/theme.ts` | Colours, fonts, springs. Change this to build your own look |
-| `src/components/` | `Background`, `Character`, `KineticText`, `Counter`, `LineChart` |
+| `src/components/` | Flat mode: `Background`, `Character`, `KineticText`, `Counter`, `LineChart`. Cinematic mode: `Silhouette`, `ParallaxStage` (+ `Skyline`, `Ground`, `Foliage`), `Overlays` (`Badge`, `TargetRings`, `Trajectory`, `Ghosts`, `SpeedBurst`). Shared pose rig: `rig.ts` |
 | `src/videos/<id>/` | One folder per video: `data.ts` (numbers) + the video component |
 | `src/CharacterSheet.tsx` | Contact sheet of every pose and mood |
 | `public/fonts/` | Inter, JetBrains Mono (SIL OFL) |
