@@ -16,6 +16,8 @@ export type SilhouetteProps = {
   enterAt?: number;
   flip?: boolean;
   seed?: number;
+  /** Move limbs on N fps steps (12 = hand-drawn feel). Off by default. */
+  limbFps?: number;
   /** Direction the light comes FROM, in degrees: 0 = right, 90 = below, 180 = left, -90 = above. */
   light?: number;
   /** Rim thickness in px (before scale). */
@@ -87,6 +89,7 @@ export const Silhouette: React.FC<SilhouetteProps> = ({
   enterAt = 0,
   flip = false,
   seed = 0,
+  limbFps,
   light = 0,
   rimWidth = 3,
   jacket = cine.core,
@@ -98,6 +101,7 @@ export const Silhouette: React.FC<SilhouetteProps> = ({
     talking,
     enterAt,
     seed,
+    limbFps,
   });
   const expr = expressions[active(expressions, frame)].value;
   const [bi, bo] = BROWS[expr];

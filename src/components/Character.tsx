@@ -21,6 +21,8 @@ export type CharacterProps = {
   flip?: boolean;
   /** Offsets the blink cycle so two characters don't blink in sync. */
   seed?: number;
+  /** Move limbs on N fps steps (12 = hand-drawn feel). Off by default. */
+  limbFps?: number;
 };
 
 const Mouth: React.FC<{ mood: Mood; open: number }> = ({ mood, open }) => {
@@ -52,12 +54,14 @@ export const Character: React.FC<CharacterProps> = ({
   enterAt = 0,
   flip = false,
   seed = 0,
+  limbFps,
 }) => {
   const { frame, pose, enter, breath, open, eyeScale, shoulderY, L, R, footSpread } = useRig({
     poses,
     talking,
     enterAt,
     seed,
+    limbFps,
   });
   const mood = moods[active(moods, frame)].value;
 

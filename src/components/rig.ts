@@ -31,7 +31,12 @@ export const POSES: Record<PoseName, Pose> = {
   brace: { left: [-20, -150], right: [-20, -150], legs: 12, hop: 0, lean: -8 },
 };
 
-export type Keyframe<T> = { at: number; value: T };
+/**
+ * how a pose arrives at its key: "smooth" settles in (default), "out" is a fast
+ * strike with a little overshoot, "snap" jumps on the key (hits, flinches).
+ */
+export type Ease = "smooth" | "out" | "snap";
+export type Keyframe<T> = { at: number; value: T; how?: Ease };
 
 export const UPPER = 72;
 export const FORE = 66;
@@ -72,6 +77,8 @@ export const useRig = (opts: {
   talking: [number, number][];
   enterAt: number;
   seed: number;
+  /** Move limbs on N fps steps (12 = held drawings, like hand animation). Body position stays smooth. */
+  limbFps?: number;
 }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
@@ -80,7 +87,15 @@ export const useRig = (opts: {
   const pi = active(opts.poses, frame);
   const target = POSES[opts.poses[pi].value];
   const from = pi > 0 ? POSES[opts.poses[pi - 1].value] : target;
-  const t = spring({ frame: frame - opts.poses[pi].at, fps, config: springs.smooth, durationInFrames: 12 });
+  const key = opts.poses[pi];
+  const since = frame - key.at;
+  const stepped = opts.limbFps ? Math.floor((since * opts.limbFps) / fps) * (fps / opts.limbFps) : since;
+  const t =
+    key.how === "snap"
+      ? 1
+      : key.how === "out"
+        ? spring({ frame: stepped, fps, config: springs.pop, durationInFrames: 6 })
+        : spring({ frame: stepped, fps, config: springs.smooth, durationInFrames: 12 });
   const pose = blendPose(from, target, t);
 
   const enter = spring({ frame: frame - opts.enterAt, fps, config: springs.pop });

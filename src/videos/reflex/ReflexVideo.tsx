@@ -2,6 +2,7 @@ import React from "react";
 import { Audio } from "@remotion/media";
 import { ALL_FORMATS, Input, UrlSource } from "mediabunny";
 import { AbsoluteFill, CalculateMetadataFunction, interpolate, Easing, Sequence, staticFile, useCurrentFrame } from "remotion";
+import { HitStop, holdFrames, Shake, videoFrameOf } from "../../components/Acting";
 import { Badge, Ghosts, quad, SpeedBurst, TargetRings, Trajectory } from "../../components/Overlays";
 import { Foliage, Ground, ParallaxStage, Skyline } from "../../components/ParallaxStage";
 import { arm, POSES, SHOULDER_X } from "../../components/rig";
@@ -26,8 +27,10 @@ const timeline = (vo: number[]) => {
   const throw2 = b2 + 22; // after the camera push-in settles
   const flight2 = 16;
   const catch2 = throw2 + flight2;
-  const end = Math.max(b2 + vo[1] + TAIL, catch2 + 45);
-  return { b1, b2, throw1, pass1, late, throw2, flight2, catch2, end };
+  // The catch lands with a short hit-stop; story time pauses, the video doesn't.
+  const hits = [{ at: catch2, hold: 4 }];
+  const end = Math.max(b2 + vo[1] + TAIL, catch2 + 45) + holdFrames(hits);
+  return { b1, b2, throw1, pass1, late, throw2, flight2, catch2, hits, end };
 };
 
 export const calculateReflexMetadata: CalculateMetadataFunction<ReflexProps> = async () => {
@@ -103,7 +106,7 @@ const Action: React.FC<{ voFrames: number[] }> = ({ voFrames }) => {
         seed={2}
         poses={[
           { at: 0, value: "idle" },
-          { at: t.pass1 + t.late, value: "brace" },
+          { at: t.pass1 + t.late, value: "brace", how: "snap" },
         ]}
         expressions={[
           { at: 0, value: "neutral" },
@@ -119,7 +122,7 @@ const Action: React.FC<{ voFrames: number[] }> = ({ voFrames }) => {
         seed={5}
         poses={[
           { at: 0, value: "idle" },
-          { at: t.catch2 - 3, value: "catch" },
+          { at: t.catch2 - 3, value: "catch", how: "out" },
         ]}
         expressions={[
           { at: 0, value: "neutral" },
@@ -156,13 +159,17 @@ export const ReflexVideo: React.FC<ReflexProps> = ({ voFrames }) => {
   const t = timeline(voFrames);
   return (
     <AbsoluteFill>
-      <ParallaxStage
-        far={<Skyline sunX={1550} />}
-        mid={<Action voFrames={voFrames} />}
-        fore={<Foliage />}
-        pan={60}
-        closeUp={{ at: t.b2, duration: 20, zoom: 1.55, focusX: 1220, focusY: 620, blur: 5 }}
-      />
+      <Shake hits={[{ at: videoFrameOf(t.catch2, t.hits), amp: 14, frames: 10 }]}>
+        <HitStop hits={t.hits}>
+          <ParallaxStage
+            far={<Skyline sunX={1550} />}
+            mid={<Action voFrames={voFrames} />}
+            fore={<Foliage />}
+            pan={60}
+            closeUp={{ at: t.b2, duration: 20, zoom: 1.55, focusX: 1220, focusY: 620, blur: 5 }}
+          />
+        </HitStop>
+      </Shake>
       <Sequence from={LEAD} layout="none">
         <Audio src={staticFile(VO_FILES[0])} />
       </Sequence>
@@ -171,8 +178,8 @@ export const ReflexVideo: React.FC<ReflexProps> = ({ voFrames }) => {
       </Sequence>
       <Sfx at={t.throw1} name="whoosh" />
       <Sfx at={t.throw2} name="whoosh" />
-      <Sfx at={t.catch2} name="pop" volume={0.45} />
-      <Sfx at={t.catch2 + 2} name="ding" volume={0.2} />
+      <Sfx at={videoFrameOf(t.catch2, t.hits)} name="pop" volume={0.45} />
+      <Sfx at={videoFrameOf(t.catch2, t.hits) + 6} name="ding" volume={0.2} />
     </AbsoluteFill>
   );
 };

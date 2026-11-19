@@ -8,7 +8,7 @@ with Remotion and Claude Code. Original style, local fonts and SFX, no paid APIs
 ```bash
 bash scripts/setup.sh        # checks node/ffmpeg/python, npm ci, configures /watch
 npx remotion studio          # live preview
-npx remotion render Compound out/compound.mp4
+bash scripts/build.sh Compound   # render + -14 LUFS + rhythm QA -> out/compound.mp4
 ```
 
 Remotion is free for individuals and teams of up to 3; larger companies need a
@@ -43,6 +43,24 @@ for 30 years ($36,000 deposited, $121,997 final).
 | `public/fonts/` | Inter, JetBrains Mono (SIL OFL) |
 | `public/sfx/` | Procedural SFX from `scripts/synth_sfx.py` |
 | `.claude/skills/` | `vector-explainer-studio` (ours), `watch` (vendored), `remotion-*` (official) |
+
+## QA tools
+
+- `scripts/build.sh <Comp>`: render, normalise loudness to -14 LUFS, run the checks below.
+- `scripts/rhythm.py <video>`: measured breakdown of any video (ours or a reference):
+  hard cuts, shot lengths, a motion curve every 0.5 s, loudness, black frames. Writes a
+  short `VIDEO.md` card plus `timeline.md` and `rhythm.md` (format idea from Rea-Video).
+  Fails on static stretches over 2.5 s, black frames, or loudness off target.
+
+## Styles
+
+`.claude/skills/vector-explainer-studio/styles/<slug>/STYLE.md`, one per look:
+`flat` (numbers, how-it-works) and `cinematic` (stories, "what if"; rim-lit silhouettes,
+parallax, hit-stop and screen shake). Add a style by copying `_template/`.
+
+Ideas adapted (no code or text copied) from Rea-Video (layered video breakdowns),
+Lemo-Opuscar (one style file per look, directing rules) and PixelFX (hit-stop, shake,
+per-key pose easing). Lemo-Opuscar's style docs are CC BY-NC 4.0, so none are included here.
 
 ## Skills
 
